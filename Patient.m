@@ -2,7 +2,8 @@ classdef Patient <handle
     properties
         Name
         Level  % 1 for green, 2 for yellow, 3 for red
-        Status  % -1 死亡；0 出院；x 在x科室治疗；x.5 在x科室等待 
+        Status  % -2 因等待死亡；-1 治疗失败死亡；0 出院；x 在x科室治疗；x.5 在x科室前等待 
+        ArriveTime
         DeadTime
         WaitTime
         History
@@ -12,20 +13,23 @@ classdef Patient <handle
 %     end
     
     methods
-        function obj = Patient(Name,Level,Status,DeadTime)
+        function obj = Patient(Name,Level,Status,ArriveTime,DeadTime)
             obj.Name = Name;
             obj.Level = Level;
             obj.Status = Status;
+            obj.ArriveTime = ArriveTime;
             obj.DeadTime = DeadTime;
             obj.WaitTime = 0;
             obj.History = [];
         end
         
-        function PatTimeGo(obj)
-            if obj.Status > 0
+        function Dead = PatTimeGo(obj)
+            Dead = 0;
+            if obj.Status - fix(obj.Status) > 0.1
                 obj.WaitTime = obj.WaitTime + 1;
                 if obj.WaitTime >= obj.DeadTime
-                    obj.Status = -1;
+                    Dead = fix(obj.Status);
+                    obj.Status = -2;
                 end
             end
             obj.History = [obj.History,obj.Status];
